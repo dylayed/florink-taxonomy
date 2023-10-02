@@ -1,13 +1,12 @@
 import { SiteConfig } from "types"
 
 export const siteConfig: SiteConfig = {
-  name: "Taxonomy",
+  name: "Florink",
   description:
-    "An open source application built using the new router, server components and everything new in Next.js 13.",
+    "Let's innovate the way we run accounting firms",
   url: "https://tx.shadcn.com",
   ogImage: "https://tx.shadcn.com/og.jpg",
   links: {
-    twitter: "https://twitter.com/shadcn",
-    github: "https://github.com/shadcn/taxonomy",
+    waitlist: "https://www.google.com",
   },
 }

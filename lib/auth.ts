@@ -1,105 +1,101 @@
-import { PrismaAdapter } from "@next-auth/prisma-adapter"
-import { NextAuthOptions } from "next-auth"
-import EmailProvider from "next-auth/providers/email"
-import GitHubProvider from "next-auth/providers/github"
-import { Client } from "postmark"
+import type { Auth, AuthError, AuthProvider, User } from "firebase/auth";
 
-import { env } from "@/env.mjs"
-import { siteConfig } from "@/config/site"
-import { db } from "@/lib/db"
+import {
+  FirebaseApp,
+  FirebaseOptions,
+  getApp,
+  getApps,
+  initializeApp,
+} from "firebase/app";
+import {
+  connectAuthEmulator,
+  getAuth,
+  signInWithPopup,
+  signOut,
+} from "firebase/auth";
 
-const postmarkClient = new Client(env.POSTMARK_API_TOKEN)
+import { clientConfig } from "@/config/firebase";
 
-export const authOptions: NextAuthOptions = {
-  // huh any! I know.
-  // This is a temporary fix for prisma client.
-  // @see https://github.com/prisma/prisma/issues/16117
-  adapter: PrismaAdapter(db as any),
-  session: {
-    strategy: "jwt",
-  },
-  pages: {
-    signIn: "/login",
-  },
-  providers: [
-    GitHubProvider({
-      clientId: env.GITHUB_CLIENT_ID,
-      clientSecret: env.GITHUB_CLIENT_SECRET,
-    }),
-    EmailProvider({
-      from: env.SMTP_FROM,
-      sendVerificationRequest: async ({ identifier, url, provider }) => {
-        const user = await db.user.findUnique({
-          where: {
-            email: identifier,
-          },
-          select: {
-            emailVerified: true,
-          },
-        })
+const getFirebaseApp = (options: FirebaseOptions) => {
+  return (!getApps().length ? initializeApp(options) : getApp()) as FirebaseApp;
+};
 
-        const templateId = user?.emailVerified
-          ? env.POSTMARK_SIGN_IN_TEMPLATE
-          : env.POSTMARK_ACTIVATION_TEMPLATE
-        if (!templateId) {
-          throw new Error("Missing template id")
-        }
+export const useFirebaseAuth = () => {
+  const getFirebaseAuth = () => {
+    const auth = getAuth(getFirebaseApp(clientConfig));
 
-        const result = await postmarkClient.sendEmailWithTemplate({
-          TemplateId: parseInt(templateId),
-          To: identifier,
-          From: provider.from as string,
-          TemplateModel: {
-            action_url: url,
-            product_name: siteConfig.name,
-          },
-          Headers: [
-            {
-              // Set this to prevent Gmail from threading emails.
-              // See https://stackoverflow.com/questions/23434110/force-emails-not-to-be-grouped-into-conversations/25435722.
-              Name: "X-Entity-Ref-ID",
-              Value: new Date().getTime() + "",
-            },
-          ],
-        })
+    if (process.env.NEXT_PUBLIC_EMULATOR_HOST) {
+      // https://stackoverflow.com/questions/73605307/firebase-auth-emulator-fails-intermittently-with-auth-emulator-config-failed
+      (auth as unknown as any)._canInitEmulator = true;
+      connectAuthEmulator(auth, process.env.NEXT_PUBLIC_EMULATOR_HOST, {
+        disableWarnings: true,
+      });
+    }
 
-        if (result.ErrorCode) {
-          throw new Error(result.Message)
-        }
-      },
-    }),
-  ],
-  callbacks: {
-    async session({ token, session }) {
-      if (token) {
-        session.user.id = token.id
-        session.user.name = token.name
-        session.user.email = token.email
-        session.user.image = token.picture
-      }
+    return auth;
+  };
 
-      return session
-    },
-    async jwt({ token, user }) {
-      const dbUser = await db.user.findFirst({
-        where: {
-          email: token.email,
-        },
-      })
+  return { getFirebaseAuth };
+};
 
-      if (!dbUser) {
-        if (user) {
-          token.id = user?.id
-        }
-        return token
-      }
+export const isCredentialAlreadyInUseError = (e: AuthError) =>
+  e?.code === "auth/credential-already-in-use";
 
-      return {
-        id: dbUser.id,
-        name: dbUser.name,
-        email: dbUser.email,
-        picture: dbUser.image,
-      }
-    },
-  },
-}
+export const logout = async (auth: Auth): Promise<void> => {
+  return signOut(auth);
+};
+
+export const actionCodeSettings = {
+  // URL you want to redirect back to. The domain (www.example.com) for this
+  // URL must be in the authorized domains list in the Firebase Console.
+  url: 'https://www.example.com/finishSignUp?cartId=1234',
+  // This must be true.
+  handleCodeInApp: true,
+};
+
+export const loginWithProvider = async (
+  auth: Auth,
+  provider: AuthProvider
+): Promise<User> => {
+  // const result = await signInWithPopup(
+  //   auth,
+  //   provider,
+  //   browserPopupRedirectResolver
+  // );
+
+  return result.user;
+};
+//   callbacks: {
+//     async session({ token, session }) {
+//       if (token) {
+//         session.user.id = token.id
+//         session.user.name = token.name
+//         session.user.email = token.email
+//         session.user.image = token.picture
+//       }
+
+//       return session
+//     },
+//     async jwt({ token, user }) {
+//       const dbUser = await db.user.findFirst({
+//         where: {
+//           email: token.email,
+//         },
+//       })
+
+//       if (!dbUser) {
+//         if (user) {
+//           token.id = user?.id
+//         }
+//         return token
+//       }
+
+//       return {
+//         id: dbUser.id,
+//         name: dbUser.name,
+//         email: dbUser.email,
+//         picture: dbUser.image,
+//       }
+//     },
+//   },
+// }
