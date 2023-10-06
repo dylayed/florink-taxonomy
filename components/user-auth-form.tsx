@@ -1,9 +1,13 @@
 "use client"
 
+import {
+  isSignInWithEmailLink,
+  sendSignInLinkToEmail,
+  signInWithEmailLink,
+} from "firebase/auth"
+import { useRouter } from "next/navigation"
 import * as React from "react"
-import { useSearchParams } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { signIn } from "next-auth/react"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
 
@@ -15,11 +19,20 @@ import { Label } from "@/components/ui/label"
 import { toast } from "@/components/ui/use-toast"
 import { Icons } from "@/components/icons"
 
+import { useFirebaseAuth } from "@/lib/auth"
+import { redirect } from "next/navigation"
+
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 type FormData = z.infer<typeof userAuthSchema>
 
+const actionCodeSettings = {
+  url: "https://super-funicular-975q5j6rv462p6j4-3000.app.github.dev/login",
+  handleCodeInApp: true,
+}
+
 export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
+  const router = useRouter()
   const {
     register,
     handleSubmit,
@@ -27,34 +40,68 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
   } = useForm<FormData>({
     resolver: zodResolver(userAuthSchema),
   })
+
+  const { getFirebaseAuth } = useFirebaseAuth()
+  const auth = getFirebaseAuth()
   const [isLoading, setIsLoading] = React.useState<boolean>(false)
-  const [isGitHubLoading, setIsGitHubLoading] = React.useState<boolean>(false)
-  const searchParams = useSearchParams()
 
   async function onSubmit(data: FormData) {
     setIsLoading(true)
 
-    const signInResult = await signIn("email", {
-      email: data.email.toLowerCase(),
-      redirect: false,
-      callbackUrl: searchParams?.get("from") || "/dashboard",
-    })
-
-    setIsLoading(false)
-
-    if (!signInResult?.ok) {
+    let signInResult
+    try {
+      const email = data.email.toLowerCase()
+      signInResult = await sendSignInLinkToEmail(
+        auth,
+        email,
+        actionCodeSettings
+      )
+      window.localStorage.setItem("emailForSignIn", email)
+      return toast({
+        title: "Check your email",
+        description:
+          "We sent you a login link. Be sure to check your spam too.",
+      })
+    } catch (e: any) {
       return toast({
         title: "Something went wrong.",
         description: "Your sign in request failed. Please try again.",
         variant: "destructive",
       })
+    } finally {
+      setIsLoading(false)
     }
-
-    return toast({
-      title: "Check your email",
-      description: "We sent you a login link. Be sure to check your spam too.",
-    })
   }
+
+  React.useEffect(() => {
+    async function handleSignInLink() {
+      try {
+        const email = window.localStorage.getItem("emailForSignIn")
+        if (email) {
+          const result = await signInWithEmailLink(
+            auth,
+            email,
+            window.location.href
+          )
+          const idTokenResult = await result.user.getIdTokenResult();
+          console.log(result)
+          console.log(idTokenResult)
+        }
+      } catch (err: any) {
+        toast({
+          title: "Something went wrong.",
+          description: "Your sign in request failed. Please try again.",
+          variant: "destructive",
+        })
+        router.push("/login")
+      }
+    }
+    if (typeof window !== "undefined") {
+      if (isSignInWithEmailLink(auth, window.location.href)) {
+        handleSignInLink()
+      }
+    }
+  });
 
   return (
     <div className={cn("grid gap-6", className)} {...props}>
@@ -71,7 +118,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
               autoCapitalize="none"
               autoComplete="email"
               autoCorrect="off"
-              disabled={isLoading || isGitHubLoading}
+              disabled={isLoading}
               {...register("email")}
             />
             {errors?.email && (

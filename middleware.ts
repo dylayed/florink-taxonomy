@@ -1,46 +1,55 @@
-import { getToken } from "next-auth/jwt"
-import { withAuth } from "next-auth/middleware"
-import { NextResponse } from "next/server"
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
+import { authentication } from "next-firebase-auth-edge/lib/next/middleware";
+import { authConfig } from "@/config/firebase";
 
-export default withAuth(
-  async function middleware(req) {
-    const token = await getToken({ req })
-    const isAuth = !!token
-    const isAuthPage =
-      req.nextUrl.pathname.startsWith("/login") ||
-      req.nextUrl.pathname.startsWith("/register")
+const PUBLIC_PATHS = ["/register", "/login", "/reset-password", "/"];
 
-    if (isAuthPage) {
-      if (isAuth) {
-        return NextResponse.redirect(new URL("/dashboard", req.url))
-      }
+function redirectToHome(request: NextRequest) {
+  const url = request.nextUrl.clone();
+  url.pathname = "/";
+  url.search = "";
+  return NextResponse.redirect(url);
+}
 
-      return null
-    }
-
-    if (!isAuth) {
-      let from = req.nextUrl.pathname;
-      if (req.nextUrl.search) {
-        from += req.nextUrl.search;
-      }
-
-      return NextResponse.redirect(
-        new URL(`/login?from=${encodeURIComponent(from)}`, req.url)
-      );
-    }
-  },
-  {
-    callbacks: {
-      async authorized() {
-        // This is a work-around for handling redirect on auth pages.
-        // We return true here so that the middleware function above
-        // is always called.
-        return true
-      },
-    },
+function redirectToLogin(request: NextRequest) {
+  if (PUBLIC_PATHS.includes(request.nextUrl.pathname)) {
+    return NextResponse.next();
   }
-)
+
+  const url = request.nextUrl.clone();
+  url.pathname = "/login";
+  url.search = `redirect=${request.nextUrl.pathname}${url.search}`;
+  return NextResponse.redirect(url);
+}
+
+export async function middleware(request: NextRequest) {
+  return authentication(request, {
+    loginPath: "/api/login",
+    logoutPath: "/api/logout",
+    apiKey: authConfig.apiKey,
+    cookieName: authConfig.cookieName,
+    cookieSerializeOptions: authConfig.cookieSerializeOptions,
+    cookieSignatureKeys: authConfig.cookieSignatureKeys,
+    serviceAccount: authConfig.serviceAccount,
+    handleValidToken: async ({ token, decodedToken }) => {
+      // Authenticated user should not be able to access /login, /register and /reset-password routes
+      if (PUBLIC_PATHS.includes(request.nextUrl.pathname)) {
+        return redirectToHome(request);
+      }
+
+      return NextResponse.next();
+    },
+    handleInvalidToken: async () => {
+      return redirectToLogin(request);
+    },
+    handleError: async (error) => {
+      console.error("Unhandled authentication error", { error });
+      return redirectToLogin(request);
+    },
+  });
+}
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/editor/:path*", "/login", "/register"],
-}
+  matcher: ["/", "/((?!_next|favicon.ico|api|.*\\.).*)", "/api/login", "/api/logout"],
+};
