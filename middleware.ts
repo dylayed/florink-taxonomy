@@ -3,11 +3,11 @@ import { NextResponse } from "next/server";
 import { authentication } from "next-firebase-auth-edge/lib/next/middleware";
 import { authConfig } from "@/config/firebase";
 
-const PUBLIC_PATHS = ["/register", "/login", "/reset-password", "/"];
+const PUBLIC_PATHS = ["/register", "/login", "/reset-password"];
 
 function redirectToHome(request: NextRequest) {
   const url = request.nextUrl.clone();
-  url.pathname = "/";
+  url.pathname = "/dashboard";
   url.search = "";
   return NextResponse.redirect(url);
 }
@@ -24,6 +24,9 @@ function redirectToLogin(request: NextRequest) {
 }
 
 export async function middleware(request: NextRequest) {
+  if (request.nextUrl.pathname === "/") {
+    return NextResponse.next();
+  }
   return authentication(request, {
     loginPath: "/api/login",
     logoutPath: "/api/logout",
@@ -37,7 +40,6 @@ export async function middleware(request: NextRequest) {
       if (PUBLIC_PATHS.includes(request.nextUrl.pathname)) {
         return redirectToHome(request);
       }
-
       return NextResponse.next();
     },
     handleInvalidToken: async () => {

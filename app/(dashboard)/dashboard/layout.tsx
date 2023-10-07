@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation"
+import { redirect } from "next/navigation"
 
 import { dashboardConfig } from "@/config/dashboard"
 import { getCurrentUser } from "@/lib/session"
@@ -15,9 +15,11 @@ export default async function DashboardLayout({
   children,
 }: DashboardLayoutProps) {
   const user = await getCurrentUser()
+  console.log(user)
+  console.log("!!!")
 
   if (!user) {
-    return notFound()
+    redirect("/login")
   }
 
   return (
@@ -25,13 +27,7 @@ export default async function DashboardLayout({
       <header className="sticky top-0 z-40 border-b bg-background">
         <div className="container flex h-16 items-center justify-between py-4">
           <MainNav items={dashboardConfig.mainNav} />
-          <UserAccountNav
-            user={{
-              name: user.name,
-              image: user.image,
-              email: user.email,
-            }}
-          />
+          <UserAccountNav user={user} />
         </div>
       </header>
       <div className="container grid flex-1 gap-12 md:grid-cols-[200px_1fr]">

@@ -39,7 +39,7 @@ export const Icons = {
   page: File,
   media: Image,
   settings: Settings,
-  billing: CreditCard,
+  accounts: CreditCard,
   ellipsis: MoreVertical,
   add: Plus,
   warning: AlertTriangle,

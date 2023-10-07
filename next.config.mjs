@@ -10,4 +10,13 @@ export const nextConfig = {
     appDir: true,
     serverComponentsExternalPackages: ["@prisma/client"],
   },
+  async redirects() {
+    return [
+      {
+        source: '/blog/:slug*',
+        destination: '/news/:slug*', // Matched parameters can be used in the destination
+        permanent: true,
+      },
+    ]
+  },
 }

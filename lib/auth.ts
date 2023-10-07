@@ -54,25 +54,10 @@ export const logout = async (auth: Auth): Promise<void> => {
 };
 
 export const actionCodeSettings = {
-  // URL you want to redirect back to. The domain (www.example.com) for this
-  // URL must be in the authorized domains list in the Firebase Console.
-  url: 'https://www.example.com/finishSignUp?cartId=1234',
-  // This must be true.
+  url: 'http://localhost:3000/login',
   handleCodeInApp: true,
 };
 
-export const loginWithProvider = async (
-  auth: Auth,
-  provider: AuthProvider
-): Promise<User> => {
-  // const result = await signInWithPopup(
-  //   auth,
-  //   provider,
-  //   browserPopupRedirectResolver
-  // );
-
-  return result.user;
-};
 //   callbacks: {
 //     async session({ token, session }) {
 //       if (token) {
