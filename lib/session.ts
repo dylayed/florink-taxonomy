@@ -12,7 +12,6 @@ export interface User extends Omit<UserInfo, "providerId"> {
 }
 
 function mapTokensToUser({ decodedToken }: Tokens): User  {
-  console.log(decodedToken);
   const {
     uid,
     email,

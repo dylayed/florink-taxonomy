@@ -36,6 +36,9 @@ export async function middleware(request: NextRequest) {
     cookieSignatureKeys: authConfig.cookieSignatureKeys,
     serviceAccount: authConfig.serviceAccount,
     handleValidToken: async ({ token, decodedToken }) => {
+      console.log("midleware!")
+      console.log(token);
+      console.log(decodedToken);
       // Authenticated user should not be able to access /login, /register and /reset-password routes
       if (PUBLIC_PATHS.includes(request.nextUrl.pathname)) {
         return redirectToHome(request);

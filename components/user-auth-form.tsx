@@ -1,8 +1,9 @@
 "use client"
 
 import * as React from "react"
-import { redirect, useRouter, useSearchParams } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { set } from "date-fns"
 import {
   isSignInWithEmailLink,
   sendSignInLinkToEmail,
@@ -66,48 +67,56 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
         description: "Your sign in request failed. Please try again.",
         variant: "destructive",
       })
+    } finally {
+      setIsLoading(false)
     }
   }
 
   React.useEffect(() => {
-    async function handleSignInLink() {
+    async function handleSignInLink(email) {
       try {
-        const email = window.localStorage.getItem("emailForSignIn")
-        if (email) {
-          const result = await signInWithEmailLink(
-            auth,
-            email,
-            window.location.href
-          )
-          const idTokenResult = await result.user.getIdTokenResult()
-          await fetch("/api/login", {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${idTokenResult.token}`,
-            },
-          })
-          console.log(result)
-          console.log(idTokenResult)
-          router.push(params.get("redirect") || "/dashboard")
-        }
+        const result = await signInWithEmailLink(
+          auth,
+          email,
+          window.location.href
+        )
+        console.log(result.user)
+        const token = await result.user.getIdToken()
+        console.log("!!!")
+        console.log(token)
+        await fetch("/api/login", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        router.push(params.get("redirect") || "/dashboard")
       } catch (err: any) {
-        console.log(err)
         toast({
           title: "Something went wrong.",
           description: "Your sign in request failed. Please try again.",
           variant: "destructive",
         })
         setIsLoading(false)
-        router.push("/login")
       }
     }
     if (typeof window !== "undefined") {
-      if (!isLoading && isSignInWithEmailLink(auth, window.location.href)) {
-        setIsLoading(true)
-        handleSignInLink()
+      if (isSignInWithEmailLink(auth, window.location.href)) {
+        const email = window.localStorage.getItem("emailForSignIn")
+        window.localStorage.removeItem("emailForSignIn")
+        if (email) {
+          setIsLoading(true)
+          handleSignInLink(email)
+        } else {
+          toast({
+            title: "Something went wrong.",
+            description: "Your sign in request failed. Please try again.",
+            variant: "destructive",
+          })
+        }
       }
     }
-  }, [auth, isLoading, router, params])
+  }, [])
 
   return (
     <div className={cn("grid gap-6", className)} {...props}>

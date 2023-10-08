@@ -39,7 +39,7 @@ export const useFirebaseAuth = () => {
     //     disableWarnings: true,
     //   });
     // }
-
+    auth.tenantId = "kwon-tz5fl";
     return auth;
   };
 
