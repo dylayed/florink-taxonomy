@@ -80,11 +80,8 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
           email,
           window.location.href
         )
-        console.log(result.user)
         const token = await result.user.getIdToken()
-        console.log("!!!")
-        console.log(token)
-        await fetch("/api/login", {
+        await fetch(`api/login?tenantId=kwon-tz5fl`, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,

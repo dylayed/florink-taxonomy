@@ -35,6 +35,7 @@ export async function middleware(request: NextRequest) {
     cookieSerializeOptions: authConfig.cookieSerializeOptions,
     cookieSignatureKeys: authConfig.cookieSignatureKeys,
     serviceAccount: authConfig.serviceAccount,
+    tenantId: "kwon-tz5fl",
     handleValidToken: async ({ token, decodedToken }) => {
       console.log("midleware!")
       console.log(token);
