@@ -37,9 +37,6 @@ export async function middleware(request: NextRequest) {
     serviceAccount: authConfig.serviceAccount,
     tenantId: "kwon-tz5fl",
     handleValidToken: async ({ token, decodedToken }) => {
-      console.log("midleware!")
-      console.log(token);
-      console.log(decodedToken);
       // Authenticated user should not be able to access /login, /register and /reset-password routes
       if (PUBLIC_PATHS.includes(request.nextUrl.pathname)) {
         return redirectToHome(request);
