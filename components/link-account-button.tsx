@@ -8,13 +8,13 @@ import { ButtonProps, buttonVariants } from "@/components/ui/button"
 import { toast } from "@/components/ui/use-toast"
 import { Icons } from "@/components/icons"
 
-interface PostCreateButtonProps extends ButtonProps {}
+interface LinkAccountbutton extends ButtonProps {}
 
-export function PostCreateButton({
+export function LinkAccountbutton({
   className,
   variant,
   ...props
-}: PostCreateButtonProps) {
+}: LinkAccountbutton) {
   const router = useRouter()
   const [isLoading, setIsLoading] = React.useState<boolean>(false)
 
@@ -75,7 +75,7 @@ export function PostCreateButton({
       ) : (
         <Icons.add className="mr-2 h-4 w-4" />
       )}
-      New post
+      Link accounts
     </button>
   )
 }
