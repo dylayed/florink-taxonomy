@@ -12,7 +12,7 @@ export const serverConfig = {
 
 export const authConfig = {
   apiKey: serverConfig.firebaseApiKey,
-  cookieName: "AuthToken",
+  cookieName: "__session",
   cookieSignatureKeys: ["secret1", "secret2"],
   cookieSerializeOptions: {
     path: "/",

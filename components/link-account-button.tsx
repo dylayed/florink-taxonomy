@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
+import { usePlaidLink } from "react-plaid-link"
 
 import { cn } from "@/lib/utils"
 import { ButtonProps, buttonVariants } from "@/components/ui/button"
@@ -16,19 +17,31 @@ export function LinkAccountbutton({
   ...props
 }: LinkAccountbutton) {
   const router = useRouter()
+  const [linkToken, setLinkToken] = React.useState<string>("")
   const [isLoading, setIsLoading] = React.useState<boolean>(false)
+
+  const onLinkSuccess = React.useCallback(async (publicToken, metadata) => {
+    console.log(publicToken)
+    // await fetch("/api/exchange-public-token", {
+    //   method: "POST",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //   },
+    //   body: JSON.stringify({ public_token: publicToken }),
+    // })
+    // Router.push("/dash")
+  }, [])
+
+  const { open, ready } = usePlaidLink({
+    token: linkToken,
+    onSuccess: onLinkSuccess,
+  })
 
   async function onClick() {
     setIsLoading(true)
 
-    const response = await fetch("/api/posts", {
+    const response = await fetch("/api/link", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        title: "Untitled Post",
-      }),
     })
 
     setIsLoading(false)
@@ -49,13 +62,15 @@ export function LinkAccountbutton({
       })
     }
 
-    const post = await response.json()
-
-    // This forces a cache invalidation.
-    router.refresh()
-
-    router.push(`/editor/${post.id}`)
+    const { link_token: linkToken } = await response.json()
+    setLinkToken(linkToken)
   }
+
+  React.useEffect(() => {
+    if (linkToken && ready) {
+      open()
+    }
+  }, [linkToken, ready, open])
 
   return (
     <button
@@ -75,7 +90,7 @@ export function LinkAccountbutton({
       ) : (
         <Icons.add className="mr-2 h-4 w-4" />
       )}
-      Link accounts
+      Link account
     </button>
   )
 }

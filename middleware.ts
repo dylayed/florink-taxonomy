@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { authentication } from "next-firebase-auth-edge/lib/next/middleware";
-import { authConfig } from "@/config/firebase";
+import { authConfig } from "@/config/auth";
 
 const PUBLIC_PATHS = ["/register", "/login", "/reset-password"];
 

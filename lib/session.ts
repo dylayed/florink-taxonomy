@@ -1,20 +1,22 @@
 import { cookies } from "next/headers";
-import { getTokens } from "next-firebase-auth-edge/lib/next/tokens";
+import { getTokens, getTokensFromObject } from "next-firebase-auth-edge/lib/next/tokens";
 import { Tokens } from "next-firebase-auth-edge/lib/auth";
 import { Claims, filterStandardClaims } from "next-firebase-auth-edge/lib/auth/claims";
 import type { UserInfo } from "firebase/auth";
 
-import { authConfig } from "@/config/firebase";
+import { authConfig } from "@/config/auth";
 
 export interface User extends Omit<UserInfo, "providerId"> {
   emailVerified: boolean;
   customClaims: Claims;
+  tenantId: string | null;
 }
 
 function mapTokensToUser({ decodedToken }: Tokens): User  {
   const {
     uid,
     email,
+    firebase,
     picture: photoURL,
     email_verified: emailVerified,
     phone_number: phoneNumber,
@@ -30,6 +32,7 @@ function mapTokensToUser({ decodedToken }: Tokens): User  {
     photoURL: photoURL ?? null,
     phoneNumber: phoneNumber ?? null,
     emailVerified: emailVerified ?? false,
+    tenantId: firebase?.tenant ?? null,
     customClaims
   };
 };
