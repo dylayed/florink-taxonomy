@@ -12,7 +12,7 @@
     "turbo": "next dev --turbo",
     "start": "next start",
     "lint": "next lint",
-    "preview": "next build && next start",
+    "preview": "next build && next start"
   },
   "dependencies": {
     "@editorjs/code": "^2.8.0",
@@ -71,7 +71,7 @@
     "next": "13.5.3",
     "next-auth": "4.22.1",
     "next-contentlayer": "^0.3.1",
-    "next-firebase-auth-edge": "0.8.8-1",
+    "next-firebase-auth-edge": "file:next-firebase-auth-edge-0.8.7.tgz",
     "next-themes": "^0.2.1",
     "nodemailer": "^6.9.1",
     "plaid": "^16.0.0",

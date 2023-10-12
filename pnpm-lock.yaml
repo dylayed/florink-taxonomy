@@ -174,8 +174,8 @@ dependencies:
     specifier: ^0.3.1
     version: 0.3.1(esbuild@0.17.18)(next@13.5.3)(react-dom@18.2.0)(react@18.2.0)
   next-firebase-auth-edge:
-    specifier: 0.8.8-1
-    version: 0.8.8-1(next@13.5.3)
+    specifier: file:next-firebase-auth-edge-0.8.7.tgz
+    version: file:next-firebase-auth-edge-0.8.7.tgz(next@13.5.3)
   next-themes:
     specifier: ^0.2.1
     version: 0.2.1(next@13.5.3)(react-dom@18.2.0)(react@18.2.0)
@@ -7770,19 +7770,6 @@ packages:
       - supports-color
     dev: false
 
-  /next-firebase-auth-edge@0.8.8-1(next@13.5.3):
-    resolution: {integrity: sha512-u4jEVaiEBO0HRHsWJA5WmKap3ntHQjoR+Pes0euZUGQmBmlj9OAJSEMZFQdwE6JSaCn7AoOXrjX4BSX+mii3pg==}
-    engines: {node: '>=16.0.0 <20.0.0', npm: '>=8.0.0 <10.0.0', yarn: '>=1.22.0 <2.0.0'}
-    peerDependencies:
-      next: ^13.4.2
-    dependencies:
-      '@changesets/cli': 2.26.2
-      cookie: 0.5.0
-      encoding: 0.1.13
-      jose: 4.15.1
-      next: 13.5.3(@babel/core@7.21.4)(@opentelemetry/api@1.1.0)(react-dom@18.2.0)(react@18.2.0)
-    dev: false
-
   /next-themes@0.2.1(next@13.5.3)(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-B+AKNfYNIzh0vqQQKqQItTS8evEouKD7H5Hj3kmuPERwddR2TxvDSFZuTj6T7Jfn1oyeUyJMydPl1Bkxkh0W7A==}
     peerDependencies:
@@ -10246,3 +10233,19 @@ packages:
 
   /zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
+
+  file:next-firebase-auth-edge-0.8.7.tgz(next@13.5.3):
+    resolution: {integrity: sha512-+woTnKxnlo9AgHPpr93ovA2Lx2WSVllNsXBa1i3tudu8Hnphbi18lz1RttOVSdmk953bZP5JsT/7mCxXrB4kkQ==, tarball: file:next-firebase-auth-edge-0.8.7.tgz}
+    id: file:next-firebase-auth-edge-0.8.7.tgz
+    name: next-firebase-auth-edge
+    version: 0.8.7
+    engines: {node: '>=16.0.0 <20.0.0', npm: '>=8.0.0 <10.0.0', yarn: '>=1.22.0 <2.0.0'}
+    peerDependencies:
+      next: ^13.4.2
+    dependencies:
+      '@changesets/cli': 2.26.2
+      cookie: 0.5.0
+      encoding: 0.1.13
+      jose: 4.15.1
+      next: 13.5.3(@babel/core@7.21.4)(@opentelemetry/api@1.1.0)(react-dom@18.2.0)(react@18.2.0)
+    dev: false
