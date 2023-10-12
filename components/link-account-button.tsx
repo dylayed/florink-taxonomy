@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
-import { usePlaidLink } from "react-plaid-link"
+import { PlaidLinkOptions, usePlaidLink } from "react-plaid-link"
 
 import { cn } from "@/lib/utils"
 import { ButtonProps, buttonVariants } from "@/components/ui/button"
@@ -16,21 +16,27 @@ export function LinkAccountbutton({
   variant,
   ...props
 }: LinkAccountbutton) {
-  const router = useRouter()
   const [linkToken, setLinkToken] = React.useState<string>("")
   const [isLoading, setIsLoading] = React.useState<boolean>(false)
+  const router = useRouter()
 
-  const onLinkSuccess = React.useCallback(async (publicToken, metadata) => {
-    console.log(publicToken)
-    // await fetch("/api/exchange-public-token", {
-    //   method: "POST",
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //   },
-    //   body: JSON.stringify({ public_token: publicToken }),
-    // })
-    // Router.push("/dash")
-  }, [])
+  const onLinkSuccess: PlaidLinkOptions["onSuccess"] = React.useCallback(
+    async (publicToken, metadata) => {
+      await fetch("/api/link/exchange", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          publicToken,
+          institutionId: metadata.institution?.institution_id,
+          linkSessionId: metadata.link_session_id,
+        }),
+      })
+      router.push("/dashboard")
+    },
+    []
+  )
 
   const { open, ready } = usePlaidLink({
     token: linkToken,
@@ -40,8 +46,12 @@ export function LinkAccountbutton({
   async function onClick() {
     setIsLoading(true)
 
-    const response = await fetch("/api/link", {
+    const response = await fetch("/api/link/token", {
       method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({}),
     })
 
     setIsLoading(false)
@@ -90,7 +100,7 @@ export function LinkAccountbutton({
       ) : (
         <Icons.add className="mr-2 h-4 w-4" />
       )}
-      Link account
+      Link
     </button>
   )
 }
