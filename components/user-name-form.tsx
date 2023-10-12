@@ -3,10 +3,10 @@
 import * as React from "react"
 import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { User } from "@prisma/client"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
 
+import { User } from "@/lib/session"
 import { cn } from "@/lib/utils"
 import { userNameSchema } from "@/lib/validations/user"
 import { buttonVariants } from "@/components/ui/button"
@@ -24,7 +24,7 @@ import { toast } from "@/components/ui/use-toast"
 import { Icons } from "@/components/icons"
 
 interface UserNameFormProps extends React.HTMLAttributes<HTMLFormElement> {
-  user: Pick<User, "id" | "name">
+  user: Pick<User, "uid" | "displayName">
 }
 
 type FormData = z.infer<typeof userNameSchema>
@@ -38,7 +38,7 @@ export function UserNameForm({ user, className, ...props }: UserNameFormProps) {
   } = useForm<FormData>({
     resolver: zodResolver(userNameSchema),
     defaultValues: {
-      name: user?.name || "",
+      name: user?.displayName || "",
     },
   })
   const [isSaving, setIsSaving] = React.useState<boolean>(false)
@@ -46,7 +46,7 @@ export function UserNameForm({ user, className, ...props }: UserNameFormProps) {
   async function onSubmit(data: FormData) {
     setIsSaving(true)
 
-    const response = await fetch(`/api/users/${user.id}`, {
+    const response = await fetch(`/api/users/${user.uid}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",

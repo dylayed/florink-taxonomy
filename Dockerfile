@@ -9,6 +9,8 @@ WORKDIR /app
 # Install dependencies based on the preferred package manager
 RUN yarn global add pnpm
 COPY package.json pnpm-lock.yaml* ./
+# Temporary hack until new version is published
+COPY next-firebase-auth-edge-0.8.7.tgz ./
 RUN pnpm i --frozen-lockfile;
 
 # Rebuild the source code only when needed

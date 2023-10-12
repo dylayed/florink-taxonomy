@@ -8,7 +8,6 @@ export const nextConfig = {
   },
   experimental: {
     appDir: true,
-    serverComponentsExternalPackages: ["@prisma/client"],
   },
   async redirects() {
     return [
